@@ -1,0 +1,9 @@
+{
+  "name": "mfe-architecture",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter \"./apps/*\" dev",
+    "build": "pnpm -r --filter \"./apps/*\" build"
+  }
+}
