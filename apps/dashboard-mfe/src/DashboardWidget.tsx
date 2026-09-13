@@ -37,14 +37,20 @@ const DashboardWidget: React.FC = () => {
         return;
       }
 
+      let didUpdate = false;
       setAccounts((current) => {
-        return current.map((account) =>
-          account.id === detail.sourceAccountId
-            ? { ...account, balance: Math.max(0, account.balance - detail.amount) }
-            : account
-        );
+        const next = current.map((account) => {
+          if (account.id !== detail.sourceAccountId) {
+            return account;
+          }
+          didUpdate = true;
+          return { ...account, balance: Math.max(0, account.balance - detail.amount) };
+        });
+        return didUpdate ? next : current;
       });
-      setLastTransfer(detail);
+      if (didUpdate) {
+        setLastTransfer(detail);
+      }
     };
 
     window.addEventListener('banking:transfer-completed', onTransfer as EventListener);

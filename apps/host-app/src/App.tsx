@@ -20,6 +20,7 @@ const toDashboardView = (value: string | null): DashboardView => {
 
 const LoginPage: React.FC = () => {
   const { login } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -30,7 +31,10 @@ const LoginPage: React.FC = () => {
       return;
     }
     login(username);
-    navigate('/dashboard?view=dashboard');
+    const from = (location.state as { from?: { pathname?: string; search?: string } } | null)?.from;
+    const canRestoreRoute = Boolean(from?.pathname?.startsWith('/dashboard'));
+    const target = canRestoreRoute ? `${from?.pathname ?? '/dashboard'}${from?.search ?? ''}` : '/dashboard?view=dashboard';
+    navigate(target);
   };
 
   return (
@@ -136,12 +140,24 @@ const DashboardPage: React.FC = () => {
 };
 
 const ProtectedRoute: React.FC<React.PropsWithChildren> = ({ children }) => {
+  const location = useLocation();
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) {
-    return <Navigate replace to="/login" />;
+    return <Navigate replace state={{ from: location }} to="/login" />;
   }
 
   return <>{children}</>;
+};
+
+const CatchAllRedirect: React.FC = () => {
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return <Navigate replace to="/dashboard?view=dashboard" />;
+  }
+
+  return <Navigate replace state={{ from: location }} to="/login" />;
 };
 
 export const App: React.FC = () => {
@@ -157,7 +173,7 @@ export const App: React.FC = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="*" element={<Navigate to="/dashboard?view=dashboard" />} />
+      <Route path="*" element={<CatchAllRedirect />} />
     </Routes>
   );
 };
