@@ -7,6 +7,7 @@ interface Beneficiary {
 }
 
 interface TransferEventDetail {
+  eventId: string;
   amount: number;
   beneficiary: string;
   reference: string;
@@ -49,6 +50,7 @@ const TransferWidget: React.FC = () => {
     }
 
     const detail: TransferEventDetail = {
+      eventId: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
       amount,
       beneficiary: beneficiary.name,
       reference,

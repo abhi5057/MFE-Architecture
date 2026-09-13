@@ -8,11 +8,15 @@ interface Account {
 }
 
 interface TransferEventDetail {
+  eventId: string;
   amount: number;
   beneficiary: string;
   reference: string;
   sourceAccountId: string;
 }
+
+const ACCOUNTS_STORAGE_KEY = 'dashboard-mfe-accounts';
+const PROCESSED_EVENTS_STORAGE_KEY = 'dashboard-mfe-processed-transfer-events';
 
 const formatCurrency = (amount: number): string =>
   new Intl.NumberFormat('en-US', {
@@ -25,20 +29,66 @@ const initialAccounts: Account[] = [
   { id: 'savings-8931', accountNumber: '**** 8931', type: 'Savings', balance: 20500 }
 ];
 
+const getStoredAccounts = (): Account[] => {
+  const raw = localStorage.getItem(ACCOUNTS_STORAGE_KEY);
+  if (!raw) {
+    return initialAccounts;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Account[];
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+  } catch {
+    return initialAccounts;
+  }
+
+  return initialAccounts;
+};
+
+const getProcessedEvents = (): Set<string> => {
+  const raw = localStorage.getItem(PROCESSED_EVENTS_STORAGE_KEY);
+  if (!raw) {
+    return new Set<string>();
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as string[];
+    if (Array.isArray(parsed)) {
+      return new Set(parsed);
+    }
+  } catch {
+    return new Set<string>();
+  }
+
+  return new Set<string>();
+};
+
 const DashboardWidget: React.FC = () => {
   const [{ accounts, lastTransfer }, setDashboardState] = useState<{
     accounts: Account[];
     lastTransfer: TransferEventDetail | null;
   }>({
-    accounts: initialAccounts,
+    accounts: getStoredAccounts(),
     lastTransfer: null
   });
+
+  const [processedEvents, setProcessedEvents] = useState<Set<string>>(() => getProcessedEvents());
+
+  useEffect(() => {
+    localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
+  }, [accounts]);
+
+  useEffect(() => {
+    localStorage.setItem(PROCESSED_EVENTS_STORAGE_KEY, JSON.stringify(Array.from(processedEvents)));
+  }, [processedEvents]);
 
   useEffect(() => {
     const onTransfer = (event: Event) => {
       const customEvent = event as CustomEvent<TransferEventDetail>;
       const detail = customEvent.detail;
-      if (!detail || detail.amount <= 0 || !detail.sourceAccountId) {
+      if (!detail || detail.amount <= 0 || !detail.sourceAccountId || !detail.eventId || processedEvents.has(detail.eventId)) {
         return;
       }
 
@@ -60,11 +110,16 @@ const DashboardWidget: React.FC = () => {
           lastTransfer: detail
         };
       });
+      setProcessedEvents((current) => {
+        const next = new Set(current);
+        next.add(detail.eventId);
+        return next;
+      });
     };
 
     window.addEventListener('banking:transfer-completed', onTransfer as EventListener);
     return () => window.removeEventListener('banking:transfer-completed', onTransfer as EventListener);
-  }, []);
+  }, [processedEvents]);
 
   const totalBalance = useMemo(() => accounts.reduce((sum, account) => sum + account.balance, 0), [accounts]);
 

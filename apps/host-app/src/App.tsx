@@ -1,5 +1,5 @@
 import React, { lazy, useMemo } from 'react';
-import { Navigate, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useTheme } from './context/ThemeContext';
 import { RemoteShell } from './components/RemoteShell';
@@ -45,9 +45,9 @@ const LoginPage: React.FC = () => {
         <input className="w-full rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800" name="password" placeholder="Password" type="password" required />
         <button className="w-full rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700" type="submit">Sign In</button>
       </form>
-      <button className="mt-4 text-sm text-blue-600 underline" onClick={() => navigate('/recover')} type="button">
+      <Link className="mt-4 inline-block text-sm text-blue-600 underline" to="/recover">
         Forgot password?
-      </button>
+      </Link>
     </main>
   );
 };
