@@ -6,7 +6,11 @@ interface RemoteShellProps {
 }
 
 const fallback = (
-  <div className="rounded-lg border border-slate-300 bg-white p-6 text-sm dark:border-slate-700 dark:bg-slate-900">
+  <div
+    aria-live="polite"
+    className="rounded-lg border border-slate-300 bg-white p-6 text-sm dark:border-slate-700 dark:bg-slate-900"
+    role="status"
+  >
     Loading widget...
   </div>
 );

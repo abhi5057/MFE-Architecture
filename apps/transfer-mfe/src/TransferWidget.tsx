@@ -10,12 +10,23 @@ interface TransferEventDetail {
   amount: number;
   beneficiary: string;
   reference: string;
+  sourceAccountId: string;
+}
+
+interface SourceAccount {
+  id: string;
+  label: string;
 }
 
 const beneficiaries: Beneficiary[] = [
   { id: 'b1', name: 'Utilities HQ', account: '*** 9213' },
   { id: 'b2', name: 'Corporate Savings', account: '*** 3321' },
   { id: 'b3', name: 'Payroll Account', account: '*** 8122' }
+];
+
+const sourceAccounts: SourceAccount[] = [
+  { id: 'checking-1123', label: 'Checking (**** 1123)' },
+  { id: 'savings-8931', label: 'Savings (**** 8931)' }
 ];
 
 const TransferWidget: React.FC = () => {
@@ -27,10 +38,12 @@ const TransferWidget: React.FC = () => {
 
     const amount = Number(formData.get('amount'));
     const beneficiaryId = String(formData.get('beneficiary') ?? '');
+    const sourceAccountId = String(formData.get('sourceAccount') ?? '');
     const reference = String(formData.get('reference') ?? '').trim() || 'N/A';
 
     const beneficiary = beneficiaries.find((item) => item.id === beneficiaryId);
-    if (!beneficiary || !Number.isFinite(amount) || amount <= 0) {
+    const sourceAccount = sourceAccounts.find((item) => item.id === sourceAccountId);
+    if (!beneficiary || !sourceAccount || !Number.isFinite(amount) || amount <= 0) {
       setStatus('Please fill out a valid transfer form.');
       return;
     }
@@ -38,7 +51,8 @@ const TransferWidget: React.FC = () => {
     const detail: TransferEventDetail = {
       amount,
       beneficiary: beneficiary.name,
-      reference
+      reference,
+      sourceAccountId: sourceAccount.id
     };
 
     window.dispatchEvent(new CustomEvent<TransferEventDetail>('banking:transfer-completed', { detail }));
@@ -48,6 +62,20 @@ const TransferWidget: React.FC = () => {
 
   return (
     <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
+      <label className="flex flex-col gap-1 text-sm">
+        From account
+        <select className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800" defaultValue="" name="sourceAccount" required>
+          <option disabled value="">
+            Select account
+          </option>
+          {sourceAccounts.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
       <label className="flex flex-col gap-1 text-sm">
         Beneficiary
         <select className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800" defaultValue="" name="beneficiary" required>

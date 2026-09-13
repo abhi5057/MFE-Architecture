@@ -1,4 +1,4 @@
-import React, { lazy, useEffect, useMemo } from 'react';
+import React, { lazy, useMemo } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useTheme } from './context/ThemeContext';
@@ -65,21 +65,11 @@ const RecoverPage: React.FC = () => {
 const DashboardPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
   const { logout, username } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   const view = useMemo(() => toDashboardView(params.get('view')), [params]);
-
-  useEffect(() => {
-    const handler = () => {
-      const query = new URLSearchParams(window.location.search);
-      setParams(query, { replace: true });
-    };
-
-    window.addEventListener('popstate', handler);
-    return () => window.removeEventListener('popstate', handler);
-  }, [setParams]);
 
   const goToView = (nextView: DashboardView) => {
     const next = new URLSearchParams(location.search);
@@ -98,7 +88,14 @@ const DashboardPage: React.FC = () => {
           <button className="rounded border border-slate-300 px-3 py-1.5 dark:border-slate-600" onClick={toggleTheme} type="button">
             Theme: {theme}
           </button>
-          <button className="rounded bg-rose-600 px-3 py-1.5 text-white" onClick={logout} type="button">
+          <button
+            className="rounded bg-rose-600 px-3 py-1.5 text-white"
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+            type="button"
+          >
             Logout
           </button>
         </div>

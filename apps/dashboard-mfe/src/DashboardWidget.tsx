@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
 interface Account {
+  id: string;
   accountNumber: string;
   type: string;
   balance: number;
@@ -10,6 +11,7 @@ interface TransferEventDetail {
   amount: number;
   beneficiary: string;
   reference: string;
+  sourceAccountId: string;
 }
 
 const formatCurrency = (amount: number): string =>
@@ -19,8 +21,8 @@ const formatCurrency = (amount: number): string =>
   }).format(amount);
 
 const initialAccounts: Account[] = [
-  { accountNumber: '**** 1123', type: 'Checking', balance: 12500 },
-  { accountNumber: '**** 8931', type: 'Savings', balance: 20500 }
+  { id: 'checking-1123', accountNumber: '**** 1123', type: 'Checking', balance: 12500 },
+  { id: 'savings-8931', accountNumber: '**** 8931', type: 'Savings', balance: 20500 }
 ];
 
 const DashboardWidget: React.FC = () => {
@@ -31,17 +33,16 @@ const DashboardWidget: React.FC = () => {
     const onTransfer = (event: Event) => {
       const customEvent = event as CustomEvent<TransferEventDetail>;
       const detail = customEvent.detail;
-      if (!detail || detail.amount <= 0) {
+      if (!detail || detail.amount <= 0 || !detail.sourceAccountId) {
         return;
       }
 
       setAccounts((current) => {
-        if (current.length === 0) {
-          return current;
-        }
-
-        const [first, ...rest] = current;
-        return [{ ...first, balance: Math.max(0, first.balance - detail.amount) }, ...rest];
+        return current.map((account) =>
+          account.id === detail.sourceAccountId
+            ? { ...account, balance: Math.max(0, account.balance - detail.amount) }
+            : account
+        );
       });
       setLastTransfer(detail);
     };
