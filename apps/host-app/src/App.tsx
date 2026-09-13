@@ -53,7 +53,12 @@ const LoginPage: React.FC = () => {
 };
 
 const RecoverPage: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  if (isAuthenticated) {
+    return <Navigate replace to="/dashboard?view=dashboard" />;
+  }
 
   return (
     <main className="mx-auto mt-16 max-w-md rounded-xl border border-slate-300 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">

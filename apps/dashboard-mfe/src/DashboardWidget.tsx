@@ -52,7 +52,7 @@ const DashboardWidget: React.FC = () => {
           if (account.id !== detail.sourceAccountId) {
             return account;
           }
-          return { ...account, balance: Math.max(0, account.balance - detail.amount) };
+          return { ...account, balance: account.balance - detail.amount };
         });
 
         return {

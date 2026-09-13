@@ -92,7 +92,7 @@ const TransferWidget: React.FC = () => {
 
       <label className="flex flex-col gap-1 text-sm">
         Amount
-        <input className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800" min="1" name="amount" required step="0.01" type="number" />
+        <input className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800" min="0.01" name="amount" required step="0.01" type="number" />
       </label>
 
       <label className="md:col-span-2 flex flex-col gap-1 text-sm">
