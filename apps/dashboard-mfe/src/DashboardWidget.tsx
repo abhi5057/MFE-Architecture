@@ -26,8 +26,13 @@ const initialAccounts: Account[] = [
 ];
 
 const DashboardWidget: React.FC = () => {
-  const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
-  const [lastTransfer, setLastTransfer] = useState<TransferEventDetail | null>(null);
+  const [{ accounts, lastTransfer }, setDashboardState] = useState<{
+    accounts: Account[];
+    lastTransfer: TransferEventDetail | null;
+  }>({
+    accounts: initialAccounts,
+    lastTransfer: null
+  });
 
   useEffect(() => {
     const onTransfer = (event: Event) => {
@@ -37,20 +42,24 @@ const DashboardWidget: React.FC = () => {
         return;
       }
 
-      let didUpdate = false;
-      setAccounts((current) => {
-        const next = current.map((account) => {
+      setDashboardState((current) => {
+        const sourceAccountExists = current.accounts.some((account) => account.id === detail.sourceAccountId);
+        if (!sourceAccountExists) {
+          return current;
+        }
+
+        const nextAccounts = current.accounts.map((account) => {
           if (account.id !== detail.sourceAccountId) {
             return account;
           }
-          didUpdate = true;
           return { ...account, balance: Math.max(0, account.balance - detail.amount) };
         });
-        return didUpdate ? next : current;
+
+        return {
+          accounts: nextAccounts,
+          lastTransfer: detail
+        };
       });
-      if (didUpdate) {
-        setLastTransfer(detail);
-      }
     };
 
     window.addEventListener('banking:transfer-completed', onTransfer as EventListener);

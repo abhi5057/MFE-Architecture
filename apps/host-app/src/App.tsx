@@ -96,7 +96,7 @@ const DashboardPage: React.FC = () => {
             className="rounded bg-rose-600 px-3 py-1.5 text-white"
             onClick={() => {
               logout();
-              navigate('/login');
+              navigate('/login', { replace: true, state: {} });
             }}
             type="button"
           >
